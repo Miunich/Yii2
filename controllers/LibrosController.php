@@ -10,6 +10,7 @@ use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 use yii\web\UploadedFile;
 use yii\filters\AccessControl;
+use yii\data\Pagination;
 
 /**
  * LibrosController implements the CRUD actions for Libros model.
@@ -21,24 +22,25 @@ class LibrosController extends Controller
      */
     public function behaviors()
     {
-        
         return [
-            'access'=>[
-                'class'=> AccessControl::className(),
-                'rules'=>[
+            'access' => [
+                'class' => AccessControl::class,
+                'only' => ['index','view','create','update','delete'],
+                'rules' => [
                     [
-                        'allow'=>true,
-                        'roles'=>['@']
-                    ]
-                ]
+                        // 'actions' => ['logout'],
+                        'allow' => true,
+                        'roles' => ['@'],
+                    ],
+                ],
             ],
             'verbs' => [
-                'class' => VerbFilter::className(),
+                'class' => VerbFilter::class,
                 'actions' => [
-                    'delete' => ['POST'],
+                    'delete' => ['post'],
                 ],
-            ]
-        ]
+            ],
+        ];
     }
 
     /**
@@ -129,16 +131,24 @@ class LibrosController extends Controller
             unlink($model->imagen);
         }
 
-        
-        
-        
-        
         $model->delete();
-
-
 
         return $this->redirect(['index']);
     }
+    public function actionLista(){
+        $model=Libros::find();
+
+        $paginacion= new Pagination([ 
+            'defaultPageSize'=>4,
+            'totalCount'=> $model->count()
+        ]);
+
+        // $libros=$model->orderBy('titulo')->offset($paginacion->offset)->limit($paginacion->limit)->all;
+        $libros=$model->orderBy('titulo')->all();
+
+        return $this->render('lista',['libros'=>$libros,'paginacion'=>$paginacion]);
+    }
+
 
     /**
      * Finds the Libros model based on its primary key value.
